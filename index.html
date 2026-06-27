@@ -20,7 +20,9 @@
     .logo{font-size:46px}
     h1{font-size:30px;margin:8px 0 6px}
     .sub{color:var(--muted);font-size:15px;line-height:1.7;margin:0}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:24px}
+    .section-title{font-size:22px;font-weight:900;margin:34px 0 4px;display:flex;align-items:baseline;gap:12px}
+    .section-title small{font-size:14px;color:var(--muted);font-weight:500}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:14px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;
       box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;text-align:center}
     .emoji{font-size:38px}
@@ -53,10 +55,14 @@
       <div class="hint">📱 現場用法：把這一頁投影或印出來，讓參加者直接掃想玩的那個主題 QR Code。</div>
     </header>
 
+    <h2 class="section-title">👥 雙人對戰<small>兩人一組，比快比準</small></h2>
     <div class="grid" id="grid"></div>
 
+    <h2 class="section-title">🏆 多人擂台<small>一房多人同步搶答 + 排行榜</small></h2>
+    <div class="grid" id="gridMp"></div>
+
     <footer>
-      共 5 個對決主題　·　掃 QR 即玩，無需安裝 App<br>
+      雙人對戰 5 主題　+　多人擂台 5 主題　·　掃 QR 即玩，無需安裝 App<br>
       製作：食品衛生與營養衛教互動對決
     </footer>
   </div>
@@ -72,6 +78,13 @@
       { emoji:"🧑‍🍳", tag:"GHP 單元二", title:"GHP ② 人員與衛生作業", desc:"人員衛生、清潔消毒、廢棄物", url:"https://shen0524.github.io/ghp2-duel/" },
       { emoji:"📦", tag:"GHP 單元三", title:"GHP ③ 管理與流程", desc:"倉儲運輸、檢驗、客訴回收、紀錄", url:"https://shen0524.github.io/ghp3-duel/" }
     ];
+    const SITES_MP = [
+      { emoji:"🍱", tag:"食品安全", title:"食安謠言 多人擂台", desc:"全場同步搶答・即時排行榜", url:"https://shen0524.github.io/food-safety-mp/" },
+      { emoji:"🥗", tag:"營養",     title:"營養謠言 多人擂台", desc:"全場同步搶答・即時排行榜", url:"https://shen0524.github.io/nutrition-mp/" },
+      { emoji:"🏭", tag:"GHP 單元一", title:"GHP① 場區設施 多人擂台", desc:"全場同步搶答・即時排行榜", url:"https://shen0524.github.io/ghp1-mp/" },
+      { emoji:"🧑‍🍳", tag:"GHP 單元二", title:"GHP② 人員衛生 多人擂台", desc:"全場同步搶答・即時排行榜", url:"https://shen0524.github.io/ghp2-mp/" },
+      { emoji:"📦", tag:"GHP 單元三", title:"GHP③ 管理流程 多人擂台", desc:"全場同步搶答・即時排行榜", url:"https://shen0524.github.io/ghp3-mp/" }
+    ];
 
     function toast(msg){
       const t=document.getElementById("toast");
@@ -79,26 +92,31 @@
       clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2200);
     }
 
-    const grid=document.getElementById("grid");
-    SITES.forEach(s=>{
-      const card=document.createElement("div");
-      card.className="card";
-      card.innerHTML=
-        '<div class="emoji">'+s.emoji+'</div>'+
-        '<span class="tag">'+s.tag+'</span>'+
-        '<div class="title">'+s.title+'</div>'+
-        '<div class="desc">'+s.desc+'</div>'+
-        '<div class="qr"></div>'+
-        '<a class="btn" href="'+s.url+'" target="_blank" rel="noopener">▶ 開啟對戰</a>'+
-        '<button class="btn copy">複製連結</button>';
-      grid.appendChild(card);
-      new QRCode(card.querySelector(".qr"),{text:s.url,width:150,height:150,correctLevel:QRCode.CorrectLevel.M});
-      card.querySelector(".copy").onclick=()=>{
-        (navigator.clipboard?navigator.clipboard.writeText(s.url):Promise.reject())
-          .then(()=>toast("已複製："+s.title))
-          .catch(()=>{const i=document.createElement("input");i.value=s.url;document.body.appendChild(i);i.select();document.execCommand("copy");i.remove();toast("已複製："+s.title);});
-      };
-    });
+    function render(list, gridId, btnLabel){
+      const grid=document.getElementById(gridId);
+      list.forEach(s=>{
+        const card=document.createElement("div");
+        card.className="card";
+        card.innerHTML=
+          '<div class="emoji">'+s.emoji+'</div>'+
+          '<span class="tag">'+s.tag+'</span>'+
+          '<div class="title">'+s.title+'</div>'+
+          '<div class="desc">'+s.desc+'</div>'+
+          '<div class="qr"></div>'+
+          '<a class="btn" href="'+s.url+'" target="_blank" rel="noopener">'+btnLabel+'</a>'+
+          '<button class="btn copy">複製連結</button>';
+        grid.appendChild(card);
+        new QRCode(card.querySelector(".qr"),{text:s.url,width:150,height:150,correctLevel:QRCode.CorrectLevel.M});
+        card.querySelector(".copy").onclick=()=>{
+          (navigator.clipboard?navigator.clipboard.writeText(s.url):Promise.reject())
+            .then(()=>toast("已複製："+s.title))
+            .catch(()=>{const i=document.createElement("input");i.value=s.url;document.body.appendChild(i);i.select();document.execCommand("copy");i.remove();toast("已複製："+s.title);});
+        };
+      });
+    }
+
+    render(SITES, "grid", "▶ 開啟對戰");
+    render(SITES_MP, "gridMp", "▶ 開啟擂台");
   </script>
 </body>
 </html>
