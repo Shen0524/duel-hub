@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>食安・營養・GHP 對決總入口</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724; --card:#1c2942; --card2:#223252; --line:#2f4366;
+      --text:#eaf0ff; --muted:#9fb0d0; --brand:#34d399; --blue:#60a5fa; --warn:#fbbf24;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#1b2b4d 0%,var(--bg) 60%);
+      color:var(--text);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;min-height:100vh}
+    .wrap{max-width:1100px;margin:0 auto;padding:32px 16px 64px}
+    header{text-align:center;margin-bottom:28px}
+    .logo{font-size:46px}
+    h1{font-size:30px;margin:8px 0 6px}
+    .sub{color:var(--muted);font-size:15px;line-height:1.7;margin:0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:24px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;
+      box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;text-align:center}
+    .emoji{font-size:38px}
+    .tag{display:inline-block;font-size:12px;color:var(--blue);background:rgba(96,165,250,.12);
+      border:1px solid rgba(96,165,250,.3);padding:3px 10px;border-radius:999px;margin:8px 0 4px}
+    .title{font-weight:800;font-size:19px;margin:4px 0 2px}
+    .desc{color:var(--muted);font-size:13px;line-height:1.6;margin:0 0 14px;min-height:38px}
+    .qr{background:#fff;padding:10px;border-radius:12px;line-height:0;margin-bottom:14px}
+    .qr img,.qr canvas{display:block}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;
+      padding:12px 16px;border:none;border-radius:11px;font-weight:800;font-size:15px;cursor:pointer;
+      text-decoration:none;background:linear-gradient(135deg,var(--brand),#22c55e);color:#06281b}
+    .btn:hover{filter:brightness(1.05)}
+    .btn.copy{background:var(--card2);color:var(--text);border:1px solid var(--line);margin-top:8px;font-size:13px;padding:9px}
+    footer{text-align:center;color:var(--muted);font-size:13px;margin-top:36px;line-height:1.9}
+    .hint{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:#fde68a;
+      border-radius:12px;padding:12px 16px;font-size:13px;line-height:1.7;margin:18px auto 0;max-width:680px;text-align:center}
+    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0b1220;
+      border:1px solid var(--line);color:var(--text);padding:11px 18px;border-radius:12px;
+      box-shadow:var(--shadow);font-size:14px;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:50}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">🎮</div>
+      <h1>食品衛生・營養 對決總入口</h1>
+      <p class="sub">選一個主題，掃下方 QR Code 或點「開啟」即可雙人對戰。<br>適合宣導活動、闖關、教育訓練與課堂使用。</p>
+      <div class="hint">📱 現場用法：把這一頁投影或印出來，讓參加者直接掃想玩的那個主題 QR Code。</div>
+    </header>
+
+    <div class="grid" id="grid"></div>
+
+    <footer>
+      共 5 個對決主題　·　掃 QR 即玩，無需安裝 App<br>
+      製作：食品衛生與營養衛教互動對決
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    const SITES = [
+      { emoji:"🍱", tag:"食品安全", title:"食安謠言大對決", desc:"破解常見食安迷思與謠言", url:"https://shen0524.github.io/food-safety-duel/" },
+      { emoji:"🥗", tag:"營養",     title:"營養謠言大破解", desc:"減肥、保健食品、營養素迷思", url:"https://shen0524.github.io/nutrition-duel/" },
+      { emoji:"🏭", tag:"GHP 單元一", title:"GHP ① 場區與設施", desc:"場區環境、廠房設施、機器設備", url:"https://shen0524.github.io/ghp1-duel/" },
+      { emoji:"🧑‍🍳", tag:"GHP 單元二", title:"GHP ② 人員與衛生作業", desc:"人員衛生、清潔消毒、廢棄物", url:"https://shen0524.github.io/ghp2-duel/" },
+      { emoji:"📦", tag:"GHP 單元三", title:"GHP ③ 管理與流程", desc:"倉儲運輸、檢驗、客訴回收、紀錄", url:"https://shen0524.github.io/ghp3-duel/" }
+    ];
+
+    function toast(msg){
+      const t=document.getElementById("toast");
+      t.textContent=msg; t.classList.add("show");
+      clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2200);
+    }
+
+    const grid=document.getElementById("grid");
+    SITES.forEach(s=>{
+      const card=document.createElement("div");
+      card.className="card";
+      card.innerHTML=
+        '<div class="emoji">'+s.emoji+'</div>'+
+        '<span class="tag">'+s.tag+'</span>'+
+        '<div class="title">'+s.title+'</div>'+
+        '<div class="desc">'+s.desc+'</div>'+
+        '<div class="qr"></div>'+
+        '<a class="btn" href="'+s.url+'" target="_blank" rel="noopener">▶ 開啟對戰</a>'+
+        '<button class="btn copy">複製連結</button>';
+      grid.appendChild(card);
+      new QRCode(card.querySelector(".qr"),{text:s.url,width:150,height:150,correctLevel:QRCode.CorrectLevel.M});
+      card.querySelector(".copy").onclick=()=>{
+        (navigator.clipboard?navigator.clipboard.writeText(s.url):Promise.reject())
+          .then(()=>toast("已複製："+s.title))
+          .catch(()=>{const i=document.createElement("input");i.value=s.url;document.body.appendChild(i);i.select();document.execCommand("copy");i.remove();toast("已複製："+s.title);});
+      };
+    });
+  </script>
+</body>
+</html>
